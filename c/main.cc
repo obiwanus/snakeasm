@@ -1,15 +1,20 @@
 #include <stdlib.h>
+#include <time.h>
 
 #include <SDL2/SDL.h>
 
-#define WINDOW_WIDTH 600
-
-int main(void) {
+#ifdef _WIN32
+#include <windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
+#else
+int main()
+#endif
+{
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
 
-    srand(time(NULL));
+    srand((int)time(NULL));
 
     const int kTileCount = 20;
     const int kTileSize = 20;
