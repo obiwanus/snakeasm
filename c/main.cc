@@ -3,12 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-#ifdef _WIN32
-#include <windows.h>
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nShowCmd)
-#else
-int main()
-#endif
+int main(int argc, char *argv[])
 {
     SDL_Event event;
     SDL_Renderer *renderer;
