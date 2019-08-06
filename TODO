@@ -1,4 +1,3 @@
-- Make it a snake
 - Spawn random food
 - Enlarge the snake
 - Game over on hit
@@ -7,3 +6,4 @@
 DONE:
 - Move square automatically
 - Make it change direction
+- Make it a snake

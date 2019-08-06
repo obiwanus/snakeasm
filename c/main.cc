@@ -10,10 +10,17 @@ enum Direction {
     DOWN,
 };
 
-struct Snake {
+struct v2 {
     int x;
     int y;
+};
+
+#define MAX_SNAKE_SIZE 50
+
+struct Snake {
     Direction direction;
+    int size;
+    v2 sections[MAX_SNAKE_SIZE];
 };
 
 int main(int argc, char *argv[])
@@ -35,10 +42,15 @@ int main(int argc, char *argv[])
     const int kTargetFPS = 60;
     const Uint32 kFrameMS = 1000 / kTargetFPS;  // of course not precise
 
+    v2 start_point = {kTileCount / 2, kTileCount / 2};
     Snake snake;
-    snake.x = kTileCount / 2;
-    snake.y = kTileCount / 2;
     snake.direction = RIGHT;
+    snake.size = 3;
+    snake.sections[0] = start_point;
+    snake.sections[1].x = start_point.x - 1;
+    snake.sections[1].y = start_point.y;
+    snake.sections[2].x = start_point.x - 2;
+    snake.sections[2].y = start_point.y;
 
     const Uint8 *keystate = SDL_GetKeyboardState(NULL);
 
@@ -51,6 +63,7 @@ int main(int argc, char *argv[])
 
         SDL_PumpEvents();
         if (SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
+        if (keystate[SDL_SCANCODE_ESCAPE]) break;
 
         // Collect input
         if (keystate[SDL_SCANCODE_LEFT]) {
@@ -70,25 +83,31 @@ int main(int argc, char *argv[])
         if (frames_since_last_move >= frames_per_move) {
             frames_since_last_move = 0;
 
-            // Move the snake
+            // Move the tail
+            for (int i = snake.size - 1; i > 0; --i) {
+                snake.sections[i] = snake.sections[i - 1];
+            }
+
+            // Move the head
+            v2 *head = &snake.sections[0];
             switch (snake.direction) {
                 case LEFT: {
-                    snake.x -= 1;
+                    head->x -= 1;
                 } break;
                 case RIGHT: {
-                    snake.x += 1;
+                    head->x += 1;
                 } break;
                 case UP: {
-                    snake.y -= 1;
+                    head->y -= 1;
                 } break;
                 case DOWN: {
-                    snake.y += 1;
+                    head->y += 1;
                 } break;
             }
 
             // Wrap around the area
-            snake.x = (snake.x + kTileCount) % kTileCount;
-            snake.y = (snake.y + kTileCount) % kTileCount;
+            head->x = (head->x + kTileCount) % kTileCount;
+            head->y = (head->y + kTileCount) % kTileCount;
 
             // Render
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -98,9 +117,11 @@ int main(int argc, char *argv[])
             SDL_Rect sdl_rect;
             sdl_rect.w = kTileSize;
             sdl_rect.h = kTileSize;
-            sdl_rect.x = kTileGapSize + snake.x * (kTileSize + kTileGapSize);
-            sdl_rect.y = kTileGapSize + snake.y * (kTileSize + kTileGapSize);
-            SDL_RenderFillRect(renderer, &sdl_rect);
+            for (int i = 0; i < snake.size; ++i) {
+                sdl_rect.x = kTileGapSize + snake.sections[i].x * (kTileSize + kTileGapSize);
+                sdl_rect.y = kTileGapSize + snake.sections[i].y * (kTileSize + kTileGapSize);
+                SDL_RenderFillRect(renderer, &sdl_rect);
+            }
 
             SDL_RenderPresent(renderer);
         }
