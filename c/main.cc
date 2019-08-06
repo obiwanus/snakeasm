@@ -3,9 +3,17 @@
 
 #include <SDL2/SDL.h>
 
-struct Player {
+enum Direction {
+    RIGHT = 0,
+    LEFT,
+    UP,
+    DOWN,
+};
+
+struct Snake {
     int x;
     int y;
+    Direction direction;
 };
 
 int main(int argc, char *argv[])
@@ -27,50 +35,77 @@ int main(int argc, char *argv[])
     const int kTargetFPS = 60;
     const Uint32 kFrameMS = 1000 / kTargetFPS;  // of course not precise
 
-    Player player;
-    player.x = kTileCount / 2;
-    player.y = kTileCount / 2;
+    Snake snake;
+    snake.x = kTileCount / 2;
+    snake.y = kTileCount / 2;
+    snake.direction = RIGHT;
 
     const Uint8 *keystate = SDL_GetKeyboardState(NULL);
 
+    int frames_per_move = 30;  // determines game speed
+    int frames_since_last_move = 30;
+
+    // Frame loop
     while (true) {
-        Uint32 start_time = SDL_GetTicks();
+        Uint32 frame_start_time = SDL_GetTicks();
 
         SDL_PumpEvents();
         if (SDL_PollEvent(&event) && event.type == SDL_QUIT) break;
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        SDL_RenderClear(renderer);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
-        // Update
+        // Collect input
         if (keystate[SDL_SCANCODE_LEFT]) {
-            player.x -= 1;
+            snake.direction = LEFT;
         }
         if (keystate[SDL_SCANCODE_RIGHT]) {
-            player.x += 1;
+            snake.direction = RIGHT;
         }
         if (keystate[SDL_SCANCODE_UP]) {
-            player.y -= 1;
+            snake.direction = UP;
         }
         if (keystate[SDL_SCANCODE_DOWN]) {
-            player.y += 1;
+            snake.direction = DOWN;
         }
 
-        player.x = (player.x + kTileCount) % kTileCount;
-        player.y = (player.y + kTileCount) % kTileCount;
+        frames_since_last_move++;
+        if (frames_since_last_move >= frames_per_move) {
+            frames_since_last_move = 0;
 
-        // Render
-        SDL_Rect sdl_rect;
-        sdl_rect.w = kTileSize;
-        sdl_rect.h = kTileSize;
-        sdl_rect.x = kTileGapSize + player.x * (kTileSize + kTileGapSize);
-        sdl_rect.y = kTileGapSize + player.y * (kTileSize + kTileGapSize);
-        SDL_RenderFillRect(renderer, &sdl_rect);
+            // Move the snake
+            switch (snake.direction) {
+                case LEFT: {
+                    snake.x -= 1;
+                } break;
+                case RIGHT: {
+                    snake.x += 1;
+                } break;
+                case UP: {
+                    snake.y -= 1;
+                } break;
+                case DOWN: {
+                    snake.y += 1;
+                } break;
+            }
 
-        SDL_RenderPresent(renderer);
+            // Wrap around the area
+            snake.x = (snake.x + kTileCount) % kTileCount;
+            snake.y = (snake.y + kTileCount) % kTileCount;
 
-        const Uint32 frame_time = (SDL_GetTicks() - start_time);
+            // Render
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+            SDL_RenderClear(renderer);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+            SDL_Rect sdl_rect;
+            sdl_rect.w = kTileSize;
+            sdl_rect.h = kTileSize;
+            sdl_rect.x = kTileGapSize + snake.x * (kTileSize + kTileGapSize);
+            sdl_rect.y = kTileGapSize + snake.y * (kTileSize + kTileGapSize);
+            SDL_RenderFillRect(renderer, &sdl_rect);
+
+            SDL_RenderPresent(renderer);
+        }
+
+        const Uint32 frame_time = (SDL_GetTicks() - frame_start_time);
         if (frame_time < kFrameMS) {
             SDL_Delay(kFrameMS - frame_time);
         }
