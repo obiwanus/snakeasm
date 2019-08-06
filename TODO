@@ -1,9 +1,9 @@
-- Spawn random food
-- Enlarge the snake
 - Game over on hit
 
 
 DONE:
+- Spawn random food
+- Enlarge the snake
 - Move square automatically
 - Make it change direction
 - Make it a snake
