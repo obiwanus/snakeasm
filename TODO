@@ -1,7 +1,8 @@
-- Game over on hit
+- Figure out which
 
 
 DONE:
+- Compile with clang on Windows
 - Spawn random food
 - Enlarge the snake
 - Move square automatically
